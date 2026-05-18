@@ -8,6 +8,11 @@ spring:
     password: CamoteDb!2026
     driver-class-name: com.microsoft.sqlserver.jdbc.SQLServerDriver
 
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:sql/db.sql
+
   jpa:
     hibernate:
       ddl-auto: update
