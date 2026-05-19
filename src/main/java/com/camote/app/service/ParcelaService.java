@@ -5,11 +5,13 @@ import com.camote.app.model.Parcela.EstadoParcela;
 import com.camote.app.repository.ParcelaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -42,7 +44,8 @@ public class ParcelaService {
      * @return Optional con la parcela si existe
      */
     @Transactional(readOnly = true)
-    public Optional<Parcela> obtenerPorId(Long id) {
+    public Optional<Parcela> obtenerPorId(@NonNull Long id) {
+        Objects.requireNonNull(id);
         log.info("Obteniendo parcela con ID: {}", id);
         return parcelaRepository.findById(id);
     }
@@ -104,7 +107,8 @@ public class ParcelaService {
      * @param parcelaActualizada datos actualizados
      * @return parcela actualizada
      */
-    public Optional<Parcela> actualizar(Long id, Parcela parcelaActualizada) {
+    public Optional<Parcela> actualizar(@NonNull Long id, Parcela parcelaActualizada) {
+        Objects.requireNonNull(id);
         log.info("Actualizando parcela con ID: {}", id);
         return parcelaRepository.findById(id).map(parcela -> {
             parcela.setNombre(parcelaActualizada.getNombre());
@@ -126,7 +130,8 @@ public class ParcelaService {
      * @param nuevoEstado nuevo estado
      * @return parcela con estado actualizado
      */
-    public Optional<Parcela> cambiarEstado(Long id, EstadoParcela nuevoEstado) {
+    public Optional<Parcela> cambiarEstado(@NonNull Long id, EstadoParcela nuevoEstado) {
+        Objects.requireNonNull(id);
         log.info("Cambiando estado de parcela {} a {}", id, nuevoEstado);
         return parcelaRepository.findById(id).map(parcela -> {
             parcela.setEstado(nuevoEstado);
@@ -140,7 +145,8 @@ public class ParcelaService {
      *
      * @param id ID de la parcela a eliminar
      */
-    public void eliminar(Long id) {
+    public void eliminar(@NonNull Long id) {
+        Objects.requireNonNull(id);
         log.info("Eliminando parcela con ID: {}", id);
         parcelaRepository.deleteById(id);
     }

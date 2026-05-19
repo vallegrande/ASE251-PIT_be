@@ -7,9 +7,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Controlador REST para gestionar operaciones de Parcelas.
@@ -42,7 +44,8 @@ public class ParcelaRestController {
      * @return parcela encontrada
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Parcela> obtenerPorId(@PathVariable Long id) {
+    public ResponseEntity<Parcela> obtenerPorId(@PathVariable @NonNull Long id) {
+        Objects.requireNonNull(id);
         log.info("GET /api/parcelas/{} - Obteniendo parcela", id);
         return parcelaService.obtenerPorId(id)
                 .map(ResponseEntity::ok)
@@ -106,7 +109,8 @@ public class ParcelaRestController {
      * @return parcela actualizada
      */
     @PutMapping("/{id}")
-    public ResponseEntity<Parcela> actualizar(@PathVariable Long id, @RequestBody Parcela parcela) {
+    public ResponseEntity<Parcela> actualizar(@PathVariable @NonNull Long id, @RequestBody Parcela parcela) {
+        Objects.requireNonNull(id);
         log.info("PUT /api/parcelas/{} - Actualizando parcela", id);
         return parcelaService.actualizar(id, parcela)
                 .map(ResponseEntity::ok)
@@ -121,7 +125,8 @@ public class ParcelaRestController {
      * @return parcela con estado actualizado
      */
     @PatchMapping("/{id}/estado")
-    public ResponseEntity<Parcela> cambiarEstado(@PathVariable Long id, @RequestParam EstadoParcela estado) {
+    public ResponseEntity<Parcela> cambiarEstado(@PathVariable @NonNull Long id, @RequestParam EstadoParcela estado) {
+        Objects.requireNonNull(id);
         log.info("PATCH /api/parcelas/{}/estado - Cambiando estado a {}", id, estado);
         return parcelaService.cambiarEstado(id, estado)
                 .map(ResponseEntity::ok)
@@ -135,7 +140,8 @@ public class ParcelaRestController {
      * @return respuesta sin contenido
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+    public ResponseEntity<Void> eliminar(@PathVariable @NonNull Long id) {
+        Objects.requireNonNull(id);
         log.info("DELETE /api/parcelas/{} - Eliminando parcela", id);
         parcelaService.eliminar(id);
         return ResponseEntity.noContent().build();

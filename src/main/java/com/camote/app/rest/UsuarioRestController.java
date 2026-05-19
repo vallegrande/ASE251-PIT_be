@@ -8,9 +8,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Controlador REST para gestionar operaciones de Usuarios.
@@ -43,7 +45,8 @@ public class UsuarioRestController {
      * @return usuario encontrado
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Usuario> obtenerPorId(@PathVariable Long id) {
+    public ResponseEntity<Usuario> obtenerPorId(@PathVariable @NonNull Long id) {
+        Objects.requireNonNull(id);
         log.info("GET /api/usuarios/{} - Obteniendo usuario", id);
         return usuarioService.obtenerPorId(id)
                 .map(ResponseEntity::ok)
@@ -140,7 +143,8 @@ public class UsuarioRestController {
      * @return usuario actualizado
      */
     @PutMapping("/{id}")
-    public ResponseEntity<Usuario> actualizar(@PathVariable Long id, @RequestBody Usuario usuario) {
+    public ResponseEntity<Usuario> actualizar(@PathVariable @NonNull Long id, @RequestBody Usuario usuario) {
+        Objects.requireNonNull(id);
         log.info("PUT /api/usuarios/{} - Actualizando usuario", id);
         return usuarioService.actualizar(id, usuario)
                 .map(ResponseEntity::ok)
@@ -155,7 +159,8 @@ public class UsuarioRestController {
      * @return usuario actualizado
      */
     @PatchMapping("/{id}/password")
-    public ResponseEntity<Usuario> cambiarPassword(@PathVariable Long id, @RequestParam String nuevaPassword) {
+    public ResponseEntity<Usuario> cambiarPassword(@PathVariable @NonNull Long id, @RequestParam String nuevaPassword) {
+        Objects.requireNonNull(id);
         log.info("PATCH /api/usuarios/{}/password - Cambiando contraseña", id);
         return usuarioService.cambiarPassword(id, nuevaPassword)
                 .map(ResponseEntity::ok)
@@ -170,7 +175,8 @@ public class UsuarioRestController {
      * @return usuario actualizado
      */
     @PatchMapping("/{id}/estado")
-    public ResponseEntity<Usuario> cambiarEstado(@PathVariable Long id, @RequestParam EstadoUsuario estado) {
+    public ResponseEntity<Usuario> cambiarEstado(@PathVariable @NonNull Long id, @RequestParam EstadoUsuario estado) {
+        Objects.requireNonNull(id);
         log.info("PATCH /api/usuarios/{}/estado - Cambiando estado a {}", id, estado);
         return usuarioService.cambiarEstado(id, estado)
                 .map(ResponseEntity::ok)
@@ -184,7 +190,8 @@ public class UsuarioRestController {
      * @return respuesta sin contenido
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+    public ResponseEntity<Void> eliminar(@PathVariable @NonNull Long id) {
+        Objects.requireNonNull(id);
         log.info("DELETE /api/usuarios/{} - Eliminando usuario", id);
         usuarioService.eliminar(id);
         return ResponseEntity.noContent().build();

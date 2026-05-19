@@ -6,11 +6,13 @@ import com.camote.app.model.Alerta.NivelRiesgo;
 import com.camote.app.repository.AlertaRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -43,7 +45,8 @@ public class AlertaService {
      * @return Optional con la alerta si existe
      */
     @Transactional(readOnly = true)
-    public Optional<Alerta> obtenerPorId(Long id) {
+    public Optional<Alerta> obtenerPorId(@NonNull Long id) {
+        Objects.requireNonNull(id);
         log.info("Obteniendo alerta con ID: {}", id);
         return alertaRepository.findById(id);
     }
@@ -129,7 +132,8 @@ public class AlertaService {
      * @param alertaActualizada datos actualizados
      * @return alerta actualizada
      */
-    public Optional<Alerta> actualizar(Long id, Alerta alertaActualizada) {
+    public Optional<Alerta> actualizar(@NonNull Long id, Alerta alertaActualizada) {
+        Objects.requireNonNull(id);
         log.info("Actualizando alerta con ID: {}", id);
         return alertaRepository.findById(id).map(alerta -> {
             alerta.setTipo(alertaActualizada.getTipo());
@@ -146,7 +150,8 @@ public class AlertaService {
      * @param id ID de la alerta
      * @return alerta actualizada
      */
-    public Optional<Alerta> marcarAtendida(Long id) {
+    public Optional<Alerta> marcarAtendida(@NonNull Long id) {
+        Objects.requireNonNull(id);
         log.info("Marcando alerta {} como atendida", id);
         return alertaRepository.findById(id).map(alerta -> {
             alerta.setEstado(EstadoAlerta.ATENDIDA);
@@ -160,7 +165,8 @@ public class AlertaService {
      * @param id ID de la alerta
      * @return alerta actualizada
      */
-    public Optional<Alerta> descartar(Long id) {
+    public Optional<Alerta> descartar(@NonNull Long id) {
+        Objects.requireNonNull(id);
         log.info("Descartando alerta {}", id);
         return alertaRepository.findById(id).map(alerta -> {
             alerta.setEstado(EstadoAlerta.DESCARTADA);
@@ -173,7 +179,8 @@ public class AlertaService {
      *
      * @param id ID de la alerta a eliminar
      */
-    public void eliminar(Long id) {
+    public void eliminar(@NonNull Long id) {
+        Objects.requireNonNull(id);
         log.info("Eliminando alerta con ID: {}", id);
         alertaRepository.deleteById(id);
     }

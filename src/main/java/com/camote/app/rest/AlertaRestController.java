@@ -7,10 +7,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Controlador REST para gestionar operaciones de Alertas.
@@ -43,7 +45,8 @@ public class AlertaRestController {
      * @return alerta encontrada
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Alerta> obtenerPorId(@PathVariable Long id) {
+    public ResponseEntity<Alerta> obtenerPorId(@PathVariable @NonNull Long id) {
+        Objects.requireNonNull(id);
         log.info("GET /api/alertas/{} - Obteniendo alerta", id);
         return alertaService.obtenerPorId(id)
                 .map(ResponseEntity::ok)
@@ -134,7 +137,8 @@ public class AlertaRestController {
      * @return alerta actualizada
      */
     @PutMapping("/{id}")
-    public ResponseEntity<Alerta> actualizar(@PathVariable Long id, @RequestBody Alerta alerta) {
+    public ResponseEntity<Alerta> actualizar(@PathVariable @NonNull Long id, @RequestBody Alerta alerta) {
+        Objects.requireNonNull(id);
         log.info("PUT /api/alertas/{} - Actualizando alerta", id);
         return alertaService.actualizar(id, alerta)
                 .map(ResponseEntity::ok)
@@ -148,7 +152,8 @@ public class AlertaRestController {
      * @return alerta actualizada
      */
     @PatchMapping("/{id}/atender")
-    public ResponseEntity<Alerta> marcarAtendida(@PathVariable Long id) {
+    public ResponseEntity<Alerta> marcarAtendida(@PathVariable @NonNull Long id) {
+        Objects.requireNonNull(id);
         log.info("PATCH /api/alertas/{}/atender - Marcando alerta como atendida", id);
         return alertaService.marcarAtendida(id)
                 .map(ResponseEntity::ok)
@@ -162,7 +167,8 @@ public class AlertaRestController {
      * @return alerta actualizada
      */
     @PatchMapping("/{id}/descartar")
-    public ResponseEntity<Alerta> descartar(@PathVariable Long id) {
+    public ResponseEntity<Alerta> descartar(@PathVariable @NonNull Long id) {
+        Objects.requireNonNull(id);
         log.info("PATCH /api/alertas/{}/descartar - Descartando alerta", id);
         return alertaService.descartar(id)
                 .map(ResponseEntity::ok)
@@ -176,7 +182,8 @@ public class AlertaRestController {
      * @return respuesta sin contenido
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+    public ResponseEntity<Void> eliminar(@PathVariable @NonNull Long id) {
+        Objects.requireNonNull(id);
         log.info("DELETE /api/alertas/{} - Eliminando alerta", id);
         alertaService.eliminar(id);
         return ResponseEntity.noContent().build();

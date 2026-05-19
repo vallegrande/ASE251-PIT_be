@@ -6,10 +6,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Controlador REST para gestionar operaciones de Monitoreos.
@@ -42,7 +44,8 @@ public class MonitoreoRestController {
      * @return monitoreo encontrado
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Monitoreo> obtenerPorId(@PathVariable Long id) {
+    public ResponseEntity<Monitoreo> obtenerPorId(@PathVariable @NonNull Long id) {
+        Objects.requireNonNull(id);
         log.info("GET /api/monitoreos/{} - Obteniendo monitoreo", id);
         return monitoreoService.obtenerPorId(id)
                 .map(ResponseEntity::ok)
@@ -127,7 +130,8 @@ public class MonitoreoRestController {
      * @return monitoreo actualizado
      */
     @PutMapping("/{id}")
-    public ResponseEntity<Monitoreo> actualizar(@PathVariable Long id, @RequestBody Monitoreo monitoreo) {
+    public ResponseEntity<Monitoreo> actualizar(@PathVariable @NonNull Long id, @RequestBody Monitoreo monitoreo) {
+        Objects.requireNonNull(id);
         log.info("PUT /api/monitoreos/{} - Actualizando monitoreo", id);
         return monitoreoService.actualizar(id, monitoreo)
                 .map(ResponseEntity::ok)
@@ -141,7 +145,8 @@ public class MonitoreoRestController {
      * @return respuesta sin contenido
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> eliminar(@PathVariable Long id) {
+    public ResponseEntity<Void> eliminar(@PathVariable @NonNull Long id) {
+        Objects.requireNonNull(id);
         log.info("DELETE /api/monitoreos/{} - Eliminando monitoreo", id);
         monitoreoService.eliminar(id);
         return ResponseEntity.noContent().build();

@@ -1,1 +1,8 @@
-com\camote\app\rest\UsuarioRestController.class
+com/camote/app/rest/DashboardRestController.class
+com/camote/app/service/AlertaService.class
+com/camote/app/rest/UsuarioRestController.class
+com/camote/app/rest/MonitoreoRestController.class
+com/camote/app/rest/ParcelaRestController.class
+com/camote/app/service/ParcelaService.class
+com/camote/app/service/MonitoreoService.class
+com/camote/app/service/UsuarioService.class

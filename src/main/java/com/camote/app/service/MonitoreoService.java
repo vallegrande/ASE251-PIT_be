@@ -5,11 +5,13 @@ import com.camote.app.model.Monitoreo.EstadoMonitoreo;
 import com.camote.app.repository.MonitoreoRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -42,7 +44,8 @@ public class MonitoreoService {
      * @return Optional con el monitoreo si existe
      */
     @Transactional(readOnly = true)
-    public Optional<Monitoreo> obtenerPorId(Long id) {
+    public Optional<Monitoreo> obtenerPorId(@NonNull Long id) {
+        Objects.requireNonNull(id);
         log.info("Obteniendo monitoreo con ID: {}", id);
         return monitoreoRepository.findById(id);
     }
@@ -117,7 +120,8 @@ public class MonitoreoService {
      * @param monitoreoActualizado datos actualizados
      * @return monitoreo actualizado
      */
-    public Optional<Monitoreo> actualizar(Long id, Monitoreo monitoreoActualizado) {
+    public Optional<Monitoreo> actualizar(@NonNull Long id, Monitoreo monitoreoActualizado) {
+        Objects.requireNonNull(id);
         log.info("Actualizando monitoreo con ID: {}", id);
         return monitoreoRepository.findById(id).map(monitoreo -> {
             monitoreo.setTemperatura(monitoreoActualizado.getTemperatura());
@@ -135,7 +139,8 @@ public class MonitoreoService {
      *
      * @param id ID del monitoreo a eliminar
      */
-    public void eliminar(Long id) {
+    public void eliminar(@NonNull Long id) {
+        Objects.requireNonNull(id);
         log.info("Eliminando monitoreo con ID: {}", id);
         monitoreoRepository.deleteById(id);
     }

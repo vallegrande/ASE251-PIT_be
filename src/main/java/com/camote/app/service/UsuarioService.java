@@ -6,11 +6,13 @@ import com.camote.app.model.Usuario.RolUsuario;
 import com.camote.app.repository.UsuarioRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -43,7 +45,8 @@ public class UsuarioService {
      * @return Optional con el usuario si existe
      */
     @Transactional(readOnly = true)
-    public Optional<Usuario> obtenerPorId(Long id) {
+    public Optional<Usuario> obtenerPorId(@NonNull Long id) {
+        Objects.requireNonNull(id);
         log.info("Obteniendo usuario con ID: {}", id);
         return usuarioRepository.findById(id);
     }
@@ -132,7 +135,8 @@ public class UsuarioService {
      * @param usuarioActualizado datos actualizados
      * @return usuario actualizado
      */
-    public Optional<Usuario> actualizar(Long id, Usuario usuarioActualizado) {
+    public Optional<Usuario> actualizar(@NonNull Long id, Usuario usuarioActualizado) {
+        Objects.requireNonNull(id);
         log.info("Actualizando usuario con ID: {}", id);
         return usuarioRepository.findById(id).map(usuario -> {
             usuario.setNombreCompleto(usuarioActualizado.getNombreCompleto());
@@ -153,7 +157,8 @@ public class UsuarioService {
      * @param novaPassword nueva contraseña
      * @return usuario con contraseña actualizada
      */
-    public Optional<Usuario> cambiarPassword(Long id, String novaPassword) {
+    public Optional<Usuario> cambiarPassword(@NonNull Long id, String novaPassword) {
+        Objects.requireNonNull(id);
         log.info("Cambiando contraseña del usuario: {}", id);
         return usuarioRepository.findById(id).map(usuario -> {
             usuario.setPassword(novaPassword); // En producción, esto debe ser hasheado
@@ -169,7 +174,8 @@ public class UsuarioService {
      * @param nuevoEstado nuevo estado
      * @return usuario con estado actualizado
      */
-    public Optional<Usuario> cambiarEstado(Long id, EstadoUsuario nuevoEstado) {
+    public Optional<Usuario> cambiarEstado(@NonNull Long id, EstadoUsuario nuevoEstado) {
+        Objects.requireNonNull(id);
         log.info("Cambiando estado del usuario {} a {}", id, nuevoEstado);
         return usuarioRepository.findById(id).map(usuario -> {
             usuario.setEstado(nuevoEstado);
@@ -183,7 +189,8 @@ public class UsuarioService {
      *
      * @param id ID del usuario
      */
-    public void actualizarUltimaActividad(Long id) {
+    public void actualizarUltimaActividad(@NonNull Long id) {
+        Objects.requireNonNull(id);
         usuarioRepository.findById(id).ifPresent(usuario -> {
             usuario.setFechaUltimaActividad(LocalDateTime.now());
             usuarioRepository.save(usuario);
@@ -195,7 +202,8 @@ public class UsuarioService {
      *
      * @param id ID del usuario a eliminar
      */
-    public void eliminar(Long id) {
+    public void eliminar(@NonNull Long id) {
+        Objects.requireNonNull(id);
         log.info("Eliminando usuario con ID: {}", id);
         usuarioRepository.deleteById(id);
     }
