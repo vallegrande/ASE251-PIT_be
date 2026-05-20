@@ -1,133 +1,83 @@
 -- ============================================================
 -- Sistema de Gestión de Riesgos Agrícolas - Chacra de Camote
--- SQL Server - Esquema de Base de Datos
+-- SQL Server
 -- ============================================================
 
--- ============================================================
--- Limpieza de tablas previas (para asegurar recreación limpia)
--- ============================================================
-IF OBJECT_ID('dbo.alertas', 'U') IS NOT NULL DROP TABLE dbo.alertas;
-IF OBJECT_ID('dbo.monitoreos', 'U') IS NOT NULL DROP TABLE dbo.monitoreos;
-IF OBJECT_ID('dbo.parcelas', 'U') IS NOT NULL DROP TABLE dbo.parcelas;
-IF OBJECT_ID('dbo.usuarios', 'U') IS NOT NULL DROP TABLE dbo.usuarios;
+-- Crear base de datos
+IF NOT EXISTS (SELECT name FROM sys.databases WHERE name = 'camote_db')
+BEGIN
+    CREATE DATABASE camote_db;
+END
+GO
 
--- ============================================================
--- Tablas
--- ============================================================
-
--- Tabla de Usuarios
-CREATE TABLE usuarios (
-    id                      BIGINT IDENTITY(1,1) PRIMARY KEY,
-    username                NVARCHAR(50)   NOT NULL UNIQUE,
-    password                NVARCHAR(255)  NOT NULL,
-    email                   NVARCHAR(100)  NOT NULL UNIQUE,
-    nombre_completo         NVARCHAR(150)  NOT NULL,
-    telefono                NVARCHAR(20)   NULL,
-    direccion               NVARCHAR(MAX)  NULL,
-    fecha_registro          DATETIME2      NOT NULL DEFAULT GETDATE(),
-    fecha_ultima_actividad  DATETIME2      NULL,
-    rol                     NVARCHAR(20)   NOT NULL DEFAULT 'AGRICULTOR'
-                                CONSTRAINT chk_rol_usuario CHECK (rol IN ('ADMINISTRATIVO','AGRICULTOR','ESPECIALISTA')),
-    estado                  NVARCHAR(20)   NOT NULL DEFAULT 'ACTIVO'
-                                CONSTRAINT chk_estado_usuario CHECK (estado IN ('ACTIVO','INACTIVO','BLOQUEADO'))
-);
+USE camote_db;
+GO
 
 -- Tabla de Parcelas
-CREATE TABLE parcelas (
-    id                          BIGINT IDENTITY(1,1) PRIMARY KEY,
-    nombre                      NVARCHAR(100)  NOT NULL,
-    ubicacion                   NVARCHAR(MAX)  NOT NULL,
-    area                        FLOAT          NOT NULL,
-    tipo_suelo                  NVARCHAR(50)   NULL,
-    cultivo                     NVARCHAR(100)  NULL,
-    descripcion                 NVARCHAR(MAX)  NULL,
-    fecha_creacion              DATETIME2      NOT NULL DEFAULT GETDATE(),
-    fecha_ultima_modificacion   DATETIME2      NULL,
-    estado                      NVARCHAR(20)   NOT NULL DEFAULT 'ACTIVA'
-                                    CONSTRAINT chk_estado_parcela CHECK (estado IN ('ACTIVA','INACTIVA','BAJO_MANTENIMIENTO')),
-    usuario_id                  BIGINT         NOT NULL,
-    CONSTRAINT fk_parcela_usuario FOREIGN KEY (usuario_id)
-        REFERENCES usuarios(id) ON DELETE CASCADE
-);
-
--- Tabla de Monitoreos
-CREATE TABLE monitoreos (
-    id                  BIGINT IDENTITY(1,1) PRIMARY KEY,
-    fecha_monitoreo     DATETIME2      NOT NULL DEFAULT GETDATE(),
-    temperatura         FLOAT          NULL,
-    humedad             FLOAT          NULL,
-    precipitacion       FLOAT          NULL,
-    velocidad_viento    FLOAT          NULL,
-    observaciones       NVARCHAR(MAX)  NULL,
-    estado              NVARCHAR(20)   NOT NULL DEFAULT 'COMPLETADO'
-                            CONSTRAINT chk_estado_monitoreo CHECK (estado IN ('PENDIENTE','COMPLETADO','CANCELADO')),
-    parcela_id          BIGINT         NOT NULL,
-    CONSTRAINT fk_monitoreo_parcela FOREIGN KEY (parcela_id)
-        REFERENCES parcelas(id) ON DELETE CASCADE
-);
+IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='parcelas' AND xtype='U')
+BEGIN
+    CREATE TABLE parcelas (
+        id                      BIGINT IDENTITY(1,1) PRIMARY KEY,
+        nombre                  NVARCHAR(100)  NOT NULL,
+        area                    DECIMAL(10,2)  NOT NULL,
+        ubicacion               NVARCHAR(200)  NOT NULL,
+        estado                  NVARCHAR(20)   NOT NULL DEFAULT 'ACTIVO'
+                                    CONSTRAINT chk_estado_parcela CHECK (estado IN ('ACTIVO','EN_RIESGO','INACTIVO')),
+        humedad                 DECIMAL(5,2)   NULL,
+        temperatura             DECIMAL(5,2)   NULL,
+        fecha_siembra           DATE           NULL,
+        fecha_cosecha_estimada  DATE           NULL,
+        created_at              DATETIME2      DEFAULT GETDATE(),
+        updated_at              DATETIME2      DEFAULT GETDATE(),
+        deleted                 BIT            NOT NULL DEFAULT 0
+    );
+END
+GO
 
 -- Tabla de Alertas
-CREATE TABLE alertas (
-    id              BIGINT IDENTITY(1,1) PRIMARY KEY,
-    tipo            NVARCHAR(20)   NOT NULL
-                        CONSTRAINT chk_tipo_alerta CHECK (tipo IN ('PLAGA','SEQUIA','LLUVIA_INTENSA','CALOR_EXCESIVO','HUMEDAD_BAJA','ENFERMEDAD','OTRO')),
-    mensaje         NVARCHAR(MAX)  NOT NULL,
-    nivel_riesgo    NVARCHAR(10)   NOT NULL DEFAULT 'MEDIA'
-                        CONSTRAINT chk_nivel_alerta CHECK (nivel_riesgo IN ('BAJA','MEDIA','ALTA','CRITICA')),
-    fecha           DATETIME2      NOT NULL DEFAULT GETDATE(),
-    estado          NVARCHAR(15)   NOT NULL DEFAULT 'PENDIENTE'
-                        CONSTRAINT chk_estado_alerta CHECK (estado IN ('PENDIENTE','ATENDIDA','DESCARTADA')),
-    parcela_id      BIGINT         NOT NULL,
-    CONSTRAINT fk_alerta_parcela FOREIGN KEY (parcela_id)
-        REFERENCES parcelas(id) ON DELETE CASCADE
-);
+IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='alertas' AND xtype='U')
+BEGIN
+    CREATE TABLE alertas (
+        id              BIGINT IDENTITY(1,1) PRIMARY KEY,
+        parcela_id      BIGINT         NOT NULL,
+        tipo            NVARCHAR(20)   NOT NULL
+                            CONSTRAINT chk_tipo_alerta CHECK (tipo IN ('PLAGA','SEQUIA','LLUVIA_INTENSA','TEMPERATURA','OTRO')),
+        nivel           NVARCHAR(10)   NOT NULL DEFAULT 'MEDIA'
+                            CONSTRAINT chk_nivel_alerta CHECK (nivel IN ('BAJA','MEDIA','ALTA','CRITICA')),
+        descripcion     NVARCHAR(MAX)  NOT NULL,
+        estado          NVARCHAR(15)   NOT NULL DEFAULT 'PENDIENTE'
+                            CONSTRAINT chk_estado_alerta CHECK (estado IN ('PENDIENTE','ATENDIDA','DESCARTADA')),
+        fecha_alerta    DATETIME2      DEFAULT GETDATE(),
+        fecha_atencion  DATETIME2      NULL,
+        deleted         BIT            NOT NULL DEFAULT 0,
+        CONSTRAINT fk_alerta_parcela FOREIGN KEY (parcela_id)
+            REFERENCES parcelas(id) ON DELETE CASCADE
+    );
+END
+GO
 
 -- ============================================================
 -- Datos de ejemplo
 -- ============================================================
 
--- Usuarios
-INSERT INTO usuarios (username, password, email, nombre_completo, telefono, direccion, rol, estado)
-VALUES
-    ('admin',     'admin123',    'admin@camote.com',     'Administrador del Sistema', '999000001', 'Oficina Central - Lima',        'ADMINISTRATIVO', 'ACTIVO'),
-    ('jperez',    'jperez123',   'jperez@camote.com',    'Juan Pérez García',         '999000002', 'Sector Norte - Chacra Camote',  'AGRICULTOR',     'ACTIVO'),
-    ('mrodriguez','mrodriguez1', 'mrodriguez@camote.com','María Rodríguez López',     '999000003', 'Sector Sur - Chacra Camote',    'AGRICULTOR',     'ACTIVO'),
-    ('cdiaz',     'cdiaz123',    'cdiaz@camote.com',     'Carlos Díaz Sánchez',       '999000004', 'Laboratorio Agrícola - Lima',   'ESPECIALISTA',   'ACTIVO');
-
 -- Parcelas
-INSERT INTO parcelas (nombre, ubicacion, area, tipo_suelo, cultivo, descripcion, estado, usuario_id)
+INSERT INTO parcelas (nombre, area, ubicacion, estado, humedad, temperatura, fecha_siembra, fecha_cosecha_estimada)
 VALUES
-    ('Parcela Norte A',  'Sector Norte - Bloque A', 2.50, 'Arenoso',      'Camote Amarillo',  'Parcela principal del sector norte.',                        'ACTIVA',              2),
-    ('Parcela Norte B',  'Sector Norte - Bloque B', 1.80, 'Franco',       'Camote Morado',    'Parcela secundaria con riego por goteo.',                    'ACTIVA',              2),
-    ('Parcela Sur A',    'Sector Sur - Bloque A',   3.20, 'Arcilloso',    'Camote Amarillo',  'Parcela grande del sector sur, suelo pesado.',               'ACTIVA',              3),
-    ('Parcela Sur B',    'Sector Sur - Bloque B',   2.10, 'Franco',       'Camote Blanco',    'Parcela experimental con nueva variedad.',                   'ACTIVA',              3),
-    ('Parcela Central',  'Sector Central',           4.00, 'Arenoso',     'Camote Amarillo',  'Parcela central con problemas de temperatura.',              'BAJO_MANTENIMIENTO',  2),
-    ('Parcela Este',     'Sector Este',              1.50, 'Franco',      NULL,               'Parcela en descanso, sin cultivo actual.',                   'INACTIVA',            3);
-
--- Monitoreos
-INSERT INTO monitoreos (fecha_monitoreo, temperatura, humedad, precipitacion, velocidad_viento, observaciones, estado, parcela_id)
-VALUES
-    ('2025-05-10 08:00:00', 22.5, 65.0,  0.0, 12.0, 'Condiciones normales. Cultivo en buen estado.',                           'COMPLETADO', 1),
-    ('2025-05-10 08:30:00', 28.0, 30.0,  0.0, 15.0, 'Humedad muy baja. Se recomienda riego urgente.',                          'COMPLETADO', 2),
-    ('2025-05-10 09:00:00', 21.0, 70.0,  2.5, 10.0, 'Lluvia ligera registrada. Suelo bien hidratado.',                         'COMPLETADO', 3),
-    ('2025-05-10 09:30:00', 23.0, 68.0,  0.0,  8.0, 'Sin novedades. Parcela en buenas condiciones.',                           'COMPLETADO', 4),
-    ('2025-05-10 10:00:00', 31.0, 25.0,  0.0, 20.0, 'Temperatura alta y humedad crítica. Riesgo de estrés térmico.',           'COMPLETADO', 5),
-    ('2025-05-11 08:00:00', 23.0, 63.0,  0.0, 11.0, 'Monitoreo matutino. Todo estable.',                                      'COMPLETADO', 1),
-    ('2025-05-11 08:30:00', 27.5, 32.0,  0.0, 14.0, 'Humedad sigue baja a pesar de riego aplicado ayer.',                      'COMPLETADO', 2),
-    ('2025-05-12 08:00:00', 22.0, 66.0,  5.0, 18.0, 'Lluvias moderadas durante la noche. Verificar drenaje.',                  'COMPLETADO', 1),
-    ('2025-05-12 09:00:00', 20.0, 75.0, 12.0, 22.0, 'Lluvia intensa. Posible encharcamiento en zonas bajas.',                  'COMPLETADO', 3),
-    ('2025-05-13 08:00:00', 24.0, 60.0,  0.0, 10.0, 'Pendiente de completar mediciones de la tarde.',                          'PENDIENTE',  1);
+    ('Parcela Norte A',  2.50, 'Sector Norte - Bloque A', 'ACTIVO',    65.0, 22.5, '2025-01-15', '2025-05-15'),
+    ('Parcela Norte B',  1.80, 'Sector Norte - Bloque B', 'EN_RIESGO', 30.0, 28.0, '2025-01-20', '2025-05-20'),
+    ('Parcela Sur A',    3.20, 'Sector Sur - Bloque A',   'ACTIVO',    70.0, 21.0, '2025-02-01', '2025-06-01'),
+    ('Parcela Sur B',    2.10, 'Sector Sur - Bloque B',   'ACTIVO',    68.0, 23.0, '2025-02-10', '2025-06-10'),
+    ('Parcela Central',  4.00, 'Sector Central',          'EN_RIESGO', 25.0, 31.0, '2024-12-01', '2025-04-01'),
+    ('Parcela Este',     1.50, 'Sector Este',             'INACTIVO',  NULL, NULL,  NULL,         NULL);
+GO
 
 -- Alertas
-INSERT INTO alertas (tipo, mensaje, nivel_riesgo, estado, parcela_id)
+INSERT INTO alertas (parcela_id, tipo, nivel, descripcion, estado)
 VALUES
-    ('SEQUIA',         'Nivel de humedad crítico (30%). Se requiere riego inmediato.',                         'ALTA',    'PENDIENTE',   2),
-    ('CALOR_EXCESIVO', 'Temperatura supera los 30°C. Riesgo de estrés térmico en el cultivo.',                 'ALTA',    'PENDIENTE',   5),
-    ('PLAGA',          'Presencia de gorgojo del camote detectada en sector central.',                         'MEDIA',   'PENDIENTE',   5),
-    ('LLUVIA_INTENSA', 'Pronóstico de lluvias intensas para los próximos 3 días.',                             'BAJA',    'PENDIENTE',   1),
-    ('PLAGA',          'Signos tempranos de mosca blanca en hojas. Monitorear.',                               'MEDIA',   'ATENDIDA',    3),
-    ('HUMEDAD_BAJA',   'Humedad del suelo por debajo del 35%. Riesgo de marchitamiento.',                     'ALTA',    'PENDIENTE',   2),
-    ('ENFERMEDAD',     'Manchas oscuras en tubérculos. Posible pudrición por Fusarium.',                      'CRITICA', 'PENDIENTE',   5),
-    ('SEQUIA',         'Tres días sin precipitaciones y humedad descendiendo.',                                'MEDIA',   'ATENDIDA',    4),
-    ('LLUVIA_INTENSA', 'Lluvia de 12mm registrada. Verificar encharcamiento en parcela.',                     'BAJA',    'DESCARTADA',  3),
-    ('CALOR_EXCESIVO', 'Variación brusca de temperatura nocturna registrada.',                                'BAJA',    'DESCARTADA',  4);
+    (2, 'SEQUIA',         'ALTA',  'Nivel de humedad crítico (30%). Se requiere riego inmediato.',           'PENDIENTE'),
+    (5, 'TEMPERATURA',    'ALTA',  'Temperatura supera los 30°C. Riesgo de estrés térmico en el cultivo.',  'PENDIENTE'),
+    (5, 'PLAGA',          'MEDIA', 'Presencia de gorgojo del camote detectada en sector central.',           'PENDIENTE'),
+    (1, 'LLUVIA_INTENSA', 'BAJA',  'Pronóstico de lluvias intensas para los próximos 3 días.',              'PENDIENTE'),
+    (3, 'PLAGA',          'MEDIA', 'Signos tempranos de mosca blanca en hojas. Monitorear.',                'ATENDIDA'),
+    (4, 'TEMPERATURA',    'BAJA',  'Variación brusca de temperatura nocturna registrada.',                  'DESCARTADA');
+GO
